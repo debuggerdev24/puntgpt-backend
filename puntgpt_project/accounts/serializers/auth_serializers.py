@@ -86,31 +86,6 @@ class LoginSerializer(serializers.Serializer):
     
 
 
-# class ForgotPasswordSerializer(serializers.Serializer):
-#     email = serializers.EmailField()
-
-#     def validate_email(self, value):
-#         if not User.objects.filter(email=value).exists():
-#             raise serializers.ValidationError("User with this email does not exist.")
-#         return value
-
-#     def save(self):
-#         email = self.validated_data['email']
-#         user = User.objects.get(email=email)
-#         user.generate_reset_token()
-#         user.save()
-
-#         self.validated_data['user_id'] = user.id
-
-#         send_mail(
-#             subject="Your OTP Code",
-#             message=f"Your OTP is: {user.reset_token}",
-#             from_email=settings.DEFAULT_FROM_EMAIL, 
-#             recipient_list=[user.email],
-#             fail_silently=False,
-#         )
-#         return user
-
 class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
@@ -123,10 +98,9 @@ class ForgotPasswordSerializer(serializers.Serializer):
         email = self.validated_data['email']
         user = User.objects.get(email=email)
         # user.generate_reset_token()
-        user.reset_token = "1234"
-        user.save()
+        # user.save()
 
-        self.validated_data['user_id'] = user.id
+        # self.validated_data['user_id'] = user.id
 
         # send_mail(
         #     subject="Your OTP Code",
@@ -135,22 +109,53 @@ class ForgotPasswordSerializer(serializers.Serializer):
         #     recipient_list=[user.email],
         #     fail_silently=False,
         # )
+
+        # static:
+        user.reset_token = "1234"
+        user.save()
+        # return info for frontend
+        self.validated_data["user_id"] = user.id
+        self.validated_data["reset_token"] = "1234"  # testing only
+        
         return user
+    
 
-# class VerifyResetTokenSerializer(serializers.Serializer):
-#     reset_token = serializers.CharField()
+class VerifyResetTokenSerializer(serializers.Serializer):
+    reset_token = serializers.CharField()
 
-#     def validate_reset_token(self, value):
-#         user_id = self.context['user_id']
-#         try:
-#             user = User.objects.get(id=user_id)
-#         except User.DoesNotExist:
-#             raise serializers.ValidationError("Invalid user.")
+    def validate_reset_token(self, value):
+        user_id = self.context['user_id']
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Invalid user.")
 
-#         if not user.is_reset_token_valid(value):
-#             raise serializers.ValidationError("Invalid or expired token.")
+        # if not user.is_reset_token_valid(value):
+        #     raise serializers.ValidationError("Invalid or expired token.")
 
-#         return value
+        if user.reset_token != '1234':
+            raise serializers.ValidationError("Invalid or expired token.")
+
+        return value
+    
+
+class VerifyResetTokenSerializer(serializers.Serializer):
+    reset_token = serializers.CharField()
+
+    def validate_reset_token(self, value):
+        user_id = self.context['user_id']
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Invalid user.")
+
+        # if not user.is_reset_token_valid(value):
+        #     raise serializers.ValidationError("Invalid or expired token.")
+
+        if user.reset_token != '1234':
+            raise serializers.ValidationError("Invalid or expired token.")
+
+        return value
 
 class VerifyResetTokenSerializer(serializers.Serializer):
     reset_token = serializers.CharField()
@@ -171,7 +176,6 @@ class VerifyResetTokenSerializer(serializers.Serializer):
 
 
     
-
 class ResetPasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
