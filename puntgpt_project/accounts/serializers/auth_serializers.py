@@ -139,41 +139,6 @@ class VerifyResetTokenSerializer(serializers.Serializer):
         return value
     
 
-class VerifyResetTokenSerializer(serializers.Serializer):
-    reset_token = serializers.CharField()
-
-    def validate_reset_token(self, value):
-        user_id = self.context['user_id']
-        try:
-            user = User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("Invalid user.")
-
-        # if not user.is_reset_token_valid(value):
-        #     raise serializers.ValidationError("Invalid or expired token.")
-
-        if user.reset_token != '1234':
-            raise serializers.ValidationError("Invalid or expired token.")
-
-        return value
-
-class VerifyResetTokenSerializer(serializers.Serializer):
-    reset_token = serializers.CharField()
-
-    def validate_reset_token(self, value):
-        user_id = self.context['user_id']
-        try:
-            user = User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("Invalid user.")
-
-        # if not user.is_reset_token_valid(value):
-        #     raise serializers.ValidationError("Invalid or expired token.")
-        if user.reset_token != '1234':
-            raise serializers.ValidationError("Invalid or expired token.")
-
-        return value
-
 
     
 class ResetPasswordSerializer(serializers.Serializer):
@@ -182,7 +147,7 @@ class ResetPasswordSerializer(serializers.Serializer):
 
     def validate_new_password(self, value):
         pattern = re.compile(
-            r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+             r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$'
         )
         if not pattern.match(value):
             raise serializers.ValidationError(
