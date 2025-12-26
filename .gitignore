@@ -1,0 +1,26 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+
+
+# Django stuff
+*.sqlite3
+db.sqlite3
+*.log
+*.pot
+*.pyc
+*.coverage
+*.mo
+
+# Django media/static files (optional)
+media/
+staticfiles/
+
+# Secrets
+*.env
+/Progress.txt

@@ -1,0 +1,8 @@
+[
+  {"model": "horse_race.predictorpreset", "pk": 1, "fields": {"name": "BALANCED"}},
+  {"model": "horse_race.predictorpreset", "pk": 2, "fields": {"name": "WET_TRACK"}},
+  {"model": "horse_race.predictorpreset", "pk": 3, "fields": {"name": "SPEED"}},
+  {"model": "horse_race.predictorpreset", "pk": 4, "fields": {"name": "STAMINA"}},
+  {"model": "horse_race.predictorpreset", "pk": 5, "fields": {"name": "EARLY_PACE"}},
+  {"model": "horse_race.predictorpreset", "pk": 6, "fields": {"name": "CLOSER"}}
+]

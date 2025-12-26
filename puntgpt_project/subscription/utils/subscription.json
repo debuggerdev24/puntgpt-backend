@@ -1,0 +1,78 @@
+[
+  {
+    "pk": 1,
+    "fields": {
+      "plan": "Free ‘Mug Punter’ Account",
+      "price": "0",
+      "features": {
+        "items": [
+          "No chat function with PuntGPT",
+          "No access to PuntGPT Punters Club",
+          "Limited PuntGPT Search Engine Filters",
+          "Limited AI analysis of horses",
+          "Access to 1 free PuntGPT Search Filter"
+        ]
+      },
+      "duration_months": 0,
+      "product_id_ios": null,
+      "product_id_android": null
+    }
+  },
+  {
+    "pk": 2,
+    "fields": {
+      "plan": "Monthly ‘Pro Punter’ Account",
+      "price": "9.99",
+      "features": {
+        "items": [
+          "Chat function with PuntGPT",
+          "Access to PuntGPT Punters Club",
+          "Full use of PuntGPT Search Engine",
+          "Access to Classic Form Guide",
+          "Save PuntGPT Search Engine filters for quick form"
+        ]
+      },
+      "duration_months": 1,
+      "product_id_ios": "null",
+      "product_id_android": "null"
+    }
+  },
+  {
+    "pk": 3,
+    "fields": {
+      "plan": "Yearly ‘Pro Punter’ Account",
+      "price": "59.99",
+      "features": {
+        "items": [
+          "Chat function with PuntGPT",
+          "Access to PuntGPT Punters Club",
+          "Full use of PuntGPT Search Engine",
+          "Access to Classic Form Guide",
+          "Save PuntGPT Search Engine filters for quick form"
+        ]
+      },
+      "duration_months": 12,
+      "product_id_ios": "null",
+      "product_id_android": "null"
+    }
+  },
+  {
+    "pk": 4,
+    "fields": {
+      "plan": "Lifetime ‘Pro Punter’ Account",
+      "price": "249.99",
+      "features": {
+        "items": [
+          "Chat function with PuntGPT",
+          "Access to PuntGPT Punters Club",
+          "Full use of PuntGPT Search Engine",
+          "Access to Classic Form Guide",
+          "Save PuntGPT Search Engine filters for quick form"
+        ]
+      },
+      "duration_months": -1,
+      "product_id_ios": "",
+      "product_id_android": ""
+    }
+  }
+]
