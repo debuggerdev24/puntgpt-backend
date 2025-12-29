@@ -20,7 +20,7 @@ class Selection(models.Model):
     isEmergency = models.BooleanField(default=False)
 
     # from /horse-racing/v1/field/meeting/{meetingId}
-    claim = models.PositiveSmallIntegerField(null=True, blank=True)
+    claim = models.IntegerField(null=True, blank=True)
     handicap_rating = models.PositiveSmallIntegerField(null=True, blank=True)
     
     gear = models.TextField(blank=True)

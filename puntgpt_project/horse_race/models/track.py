@@ -11,7 +11,7 @@ class Track(models.Model):
     circumference = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     straight = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     is_clockwise = models.BooleanField(null=True)
-    sprint_lane = models.BooleanField(default=False)
+    sprint_lane = models.BooleanField(default=False, null=True)
     surface = models.CharField(max_length=20, blank=True)
     track_code = models.CharField(max_length=20, blank=True)
     

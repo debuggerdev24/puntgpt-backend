@@ -13,7 +13,7 @@ class Meeting(models.Model):
     # from /horse-racing/v1/field/meeting/{meetingId}
     name = models.CharField(max_length=200, blank=True)           # "bet365 Bairnsdale"
     category = models.CharField(max_length=50, blank=True)        # Professional, Picnic
-    meeting_type = models.CharField(max_length=20, blank=True)    # Metro, Provincial
+    meeting_type = models.CharField(max_length=20, blank=True, null=True)    # Metro, Provincial
     time_slot = models.CharField(max_length=20, blank=True)       # Morning, Twilight, Night
     rail_position = models.CharField(max_length=50, blank=True)
     weather_condition = models.CharField(max_length=50, blank=True)

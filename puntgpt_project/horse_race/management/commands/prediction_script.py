@@ -22,27 +22,36 @@ class Command(BaseCommand):
     help = 'Run the script checker'
 
     def handle(self, *args, **options):
-       
-       '''
+        # # 1. Fetch ALL meetings for today's race
         # target_date = date.today()
 
         # if options.get('date'):
-        #     target_date = datetime.strptime(options['date'], '%Y-%m-%d').date()
+        #     try:
+        #         target_date = datetime.strptime(options['date'], '%Y-%m-%d').date()
+        #     except ValueError:
+        #         self.stdout.write(self.style.ERROR(f"Invalid date format: {options['date']}"))
+        #         return
 
-       meeting_ids = Meeting.objects.
-        # total = jockey_ids.count()
+        # meetings = Meeting.objects.filter(date=target_date)
+        # total_meetings = meetings.count()
 
-        # print(f"Total jockeys to sync: {total}")
+        # if total_meetings == 0:
+        #     self.stdout.write(self.style.WARNING(f"No meetings found for date: {target_date}"))
+        #     return
 
-        # for jockey_id in jockey_ids:
-        #     self.sync_jockey_detail(jockey_id)
-        '''
+        # self.stdout.write(self.style.SUCCESS(f"Found {total_meetings} meetings to sync for {target_date}"))
 
-        # for checking purpose:
-        jockey = Jockey.objects.first()
-        self.sync_jockey_detail(jockey.jockey_id)
+        # for i, meeting in enumerate(meetings, 1):
+        #     if meeting.meetingId:
+        #         self.stdout.write(f"Syncing {i}/{total_meetings} (Meeting ID: {meeting.meetingId})...")
+        #         self.sync_prediction(meeting.meetingId)
 
-    def sync_prediction(meetingId):
+        meetingId = Meeting.objects.first().meetingId   
+        self.sync_prediction(meetingId)
+
+
+    # 5.prediction (/horse-racing/v1/predictor/meeting/{meetingId})
+    def sync_prediction(self, meetingId):
         url = f"{BASE_URL}/horse-racing/v1/predictor/meeting/{meetingId}"
         headers = {"Authorization": f"Bearer {settings.FORMPRO_API_KEY}",
                 "Accept": "application/json"}
@@ -85,13 +94,13 @@ class Command(BaseCommand):
                                 selection=selection_obj,
                                 preset=preset_obj,
                                 normalised_rating=norm_rating,
-                                rating_100=int(round(norm_rating * 100))  # ← your genius field
+                                # rating_100=int(round(norm_rating * 100))  # ← your genius field
                             ))
 
                 PredictorRating.objects.bulk_create(
                 ratings_to_save,
                 update_conflicts=True,
-                update_fields=["normalised_rating", "rating_100"],
+                update_fields=["normalised_rating",],
                 unique_fields=["selection", "preset"]
             )
 

@@ -18,7 +18,7 @@ class Race(models.Model):
     
     prize_money = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     
-    start_type = models.CharField(max_length=20, blank=True)
+    start_type = models.CharField(max_length=20, blank=True, null=True)
     startTimeUtc = models.DateTimeField(null=True, blank=True)
     
     track_condition = models.CharField(max_length=20, blank=True)
