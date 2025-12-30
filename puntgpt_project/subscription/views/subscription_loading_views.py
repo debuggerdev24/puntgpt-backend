@@ -56,6 +56,7 @@ class SubscriptionLoadingView(APIView):
             })
 
         response, code = success_response(
+            "Subscription plans loaded successfully",
             saved_plans,
             status_code=status.HTTP_200_OK
         )
