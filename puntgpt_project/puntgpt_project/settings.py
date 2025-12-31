@@ -95,7 +95,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': os.environ.get('DB_HOST'),
         'PORT': os.environ.get('DB_PORT'),
-        'TIME_ZONE': 'Australia/Sydney',
+        # 'TIME_ZONE': 'Australia/Sydney',
     }
 }
 
@@ -168,8 +168,8 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
-    # "REFRESH_TOKEN_LIFETIME": timedelta(minutes=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=1, seconds=30)
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=2),
+    # "REFRESH_TOKEN_LIFETIME": timedelta(minutes=1, seconds=30)
 }
 
 # email settings
