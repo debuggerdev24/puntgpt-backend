@@ -158,17 +158,14 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 # simple jwt authentication
 REST_FRAMEWORK = {
-    
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        
+    'DEFAULT_AUTHENTICATION_CLASSES': (       
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
-    
+    )    
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=2),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1200),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=10),
     # "REFRESH_TOKEN_LIFETIME": timedelta(minutes=1, seconds=30)
 }
 

@@ -5,6 +5,8 @@ from django.db import transaction
 from django.conf import settings
 from decimal import Decimal
 from dateutil import parser
+from django.utils import timezone as dj_timezone 
+
 
 # Model importing:
 from horse_race.models.horse import *
@@ -22,25 +24,30 @@ BASE_URL = "https://api.formpro.com.au"
 class Command(BaseCommand):
     def handle(self, *args, **options):
 
-        '''
         # no need of refreshing all horses perday so we will fetch the data of the horse that participated in today race.
-        # target_date = date.today()
+        target_date = date.today()
+        if options.get('date'):
+            target_date = datetime.strptime(options['date'], '%Y-%m-%d').date()
 
-        # if options.get('date'):
-        #     target_date = datetime.strptime(options['date'], '%Y-%m-%d').date()
+        start_dt = dj_timezone.make_aware(datetime.combine(target_date, time.min), timezone=timezone.utc)
+        end_dt   = dj_timezone.make_aware(datetime.combine(target_date, time.max), timezone=timezone.utc)
 
-        # horse_ids = Selection.objects.filter(race__metting__date=target_date).values_list('horse_id',flat=True).distinct()
-        # total = horse_ids.count()
+        print(start_dt, end_dt)
+        horse_ids = (
+            Selection.objects
+            .filter(race__meeting__startTimeUtc__range=(start_dt, end_dt))
+            .values_list('horse_id', flat=True)
+            .distinct()
+        )
+        total = horse_ids.count()
+        print(f"Total horses to sync: {total}")
 
-        # print(f"Total horses to sync: {total}")
-
-        # for horse_id in horse_ids:
-        #     self.sync_horse_detail(horse_id)
-        '''
-
+        for horse_id in horse_ids:
+            self.sync_horse_detail(horse_id)
+        
         # for checking purpose:
-        horse = Horse.objects.first()
-        self.sync_horse_detail(horse.horse_id)
+        # horse = Horse.objects.first()
+        # self.sync_horse_detail(horse.horse_id)
      
     def sync_horse_detail(self,horse_id: int):
         url = f"{BASE_URL}/horse-racing/v1/statistics/horse/{horse_id}"

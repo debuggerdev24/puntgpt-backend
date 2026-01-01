@@ -9,6 +9,7 @@ class Meeting(models.Model):
     isTrial = models.BooleanField(default=False)
     stage = models.CharField(max_length=50)                   # e.g. FinalFields, Results
     startTimeUtc = models.DateTimeField(null=True, blank=True)
+    startTimeUtc_raw = models.CharField(max_length=100, null=True, blank=True)
 
     # from /horse-racing/v1/field/meeting/{meetingId}
     name = models.CharField(max_length=200, blank=True)           # "bet365 Bairnsdale"

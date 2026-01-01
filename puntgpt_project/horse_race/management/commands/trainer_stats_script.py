@@ -5,6 +5,7 @@ from django.db import transaction
 from django.conf import settings
 from decimal import Decimal
 from dateutil import parser
+from django.utils import timezone as dj_timezone 
 
 # Model importing:
 from horse_race.models.horse import *
@@ -22,32 +23,32 @@ class Command(BaseCommand):
     help = 'Run the script checker'
 
     def handle(self, *args, **options):
-        # # 1. Fetch ALL trainers for today's race
-        # target_date = date.today()
+        # # 1. Fetch ALL trainers for today's race        
+        target_date = date.today()
+        if options.get('date'):
+            target_date = datetime.strptime(options['date'], '%Y-%m-%d').date()
 
-        # if options.get('date'):
-        #     try:
-        #         target_date = datetime.strptime(options['date'], '%Y-%m-%d').date()
-        #     except ValueError:
-        #         self.stdout.write(self.style.ERROR(f"Invalid date format: {options['date']}"))
-        #         return
+        start_dt = dj_timezone.make_aware(datetime.combine(target_date, time.min), timezone=timezone.utc)
+        end_dt   = dj_timezone.make_aware(datetime.combine(target_date, time.max), timezone=timezone.utc)
 
-        # trainer_ids = Selection.objects.filter(
-        #     race__meeting__date=target_date
-        # ).values_list('trainer_id', flat=True).distinct()
+        print(start_dt, end_dt)
+
+        trainer_ids = Selection.objects.filter(
+            race__meeting__startTimeUtc__range=(start_dt, end_dt)
+        ).values_list('trainer_id', flat=True).distinct()
         
-        # total = trainer_ids.count()
+        total = trainer_ids.count()
 
-        # self.stdout.write(self.style.SUCCESS(f"Found {total} trainers to sync for {target_date}"))
+        self.stdout.write(self.style.SUCCESS(f"Found {total} trainers to sync for {target_date}"))
 
-        # for i, trainer_id in enumerate(trainer_ids, 1):
-        #     if trainer_id: # Check strictly for not none
-        #         self.stdout.write(f"Syncing {i}/{total} (ID: {trainer_id})...")
-        #         self.sync_trainer_details(trainer_id)
+        for i, trainer_id in enumerate(trainer_ids, 1):
+            if trainer_id: # Check strictly for not none
+                self.stdout.write(f"Syncing {i}/{total} (ID: {trainer_id})...")
+                self.sync_trainer_details(trainer_id)
 
         # for checking
-        trainer = Trainer.objects.first()
-        self.sync_trainer_details(trainer.trainer_id)
+        # trainer = Trainer.objects.first()
+        # self.sync_trainer_details(trainer.trainer_id)
     
     
     def sync_trainer_details(self, trainerId: int):

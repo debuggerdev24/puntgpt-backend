@@ -27,7 +27,7 @@ class Selection(models.Model):
     gear_changes = models.TextField(blank=True)
     
     racing_colours = models.CharField(max_length=255, blank=True)
-    silks_image = models.URLField(blank=True)
+    silks_image = models.URLField(null=True, blank=True)
 
     # /horse-racing/v1/form/race/{raceId}
     starting_price = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)

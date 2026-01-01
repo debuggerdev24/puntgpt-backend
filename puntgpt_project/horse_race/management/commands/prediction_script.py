@@ -5,6 +5,7 @@ from django.db import transaction
 from django.conf import settings
 from decimal import Decimal
 from dateutil import parser
+from django.utils import timezone as dj_timezone 
 
 # Model importing:
 from horse_race.models.horse import *
@@ -22,32 +23,33 @@ class Command(BaseCommand):
     help = 'Run the script checker'
 
     def handle(self, *args, **options):
-        # # 1. Fetch ALL meetings for today's race
-        # target_date = date.today()
 
-        # if options.get('date'):
-        #     try:
-        #         target_date = datetime.strptime(options['date'], '%Y-%m-%d').date()
-        #     except ValueError:
-        #         self.stdout.write(self.style.ERROR(f"Invalid date format: {options['date']}"))
-        #         return
+        # 1. Fetch ALL meetings for today's race 
+        target_date = date.today()
+        if options.get('date'):
+            target_date = datetime.strptime(options['date'], '%Y-%m-%d').date()
 
-        # meetings = Meeting.objects.filter(date=target_date)
-        # total_meetings = meetings.count()
+        start_dt = dj_timezone.make_aware(datetime.combine(target_date, time.min), timezone=timezone.utc)
+        end_dt   = dj_timezone.make_aware(datetime.combine(target_date, time.max), timezone=timezone.utc)
 
-        # if total_meetings == 0:
-        #     self.stdout.write(self.style.WARNING(f"No meetings found for date: {target_date}"))
-        #     return
+        print(start_dt, end_dt)
 
-        # self.stdout.write(self.style.SUCCESS(f"Found {total_meetings} meetings to sync for {target_date}"))
+        meetings = Meeting.objects.filter(startTimeUtc__range=(start_dt, end_dt))
+        total_meetings = meetings.count()
 
-        # for i, meeting in enumerate(meetings, 1):
-        #     if meeting.meetingId:
-        #         self.stdout.write(f"Syncing {i}/{total_meetings} (Meeting ID: {meeting.meetingId})...")
-        #         self.sync_prediction(meeting.meetingId)
+        if total_meetings == 0:
+            self.stdout.write(self.style.WARNING(f"No meetings found for date: {target_date}"))
+            return
 
-        meetingId = Meeting.objects.first().meetingId   
-        self.sync_prediction(meetingId)
+        self.stdout.write(self.style.SUCCESS(f"Found {total_meetings} meetings to sync for {target_date}"))
+
+        for i, meeting in enumerate(meetings, 1):
+            if meeting.meetingId:
+                self.stdout.write(f"Syncing {i}/{total_meetings} (Meeting ID: {meeting.meetingId})...")
+                self.sync_prediction(meeting.meetingId)
+
+        # meetingId = Meeting.objects.first().meetingId   
+        # self.sync_prediction(meetingId)
 
 
     # 5.prediction (/horse-racing/v1/predictor/meeting/{meetingId})

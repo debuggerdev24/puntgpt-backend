@@ -99,7 +99,9 @@ class Command(BaseCommand):
                         "track": track_obj,
                         "isTrial": meeting_data["isTrial"],
                         "stage": meeting_data["stage"],
-                        "startTimeUtc": parser.isoparse(start_time_str) if start_time_str else None,
+                        # "startTimeUtc": parser.isoparse(start_time_str) if start_time_str else None,
+                        "startTimeUtc" : start_time_str,
+                        "startTimeUtc_raw" : start_time_str
                     }
                 )
                 race_obj = []   #list use append method()

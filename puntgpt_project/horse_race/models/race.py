@@ -5,9 +5,9 @@ class Race(models.Model):
     # from the /horse-racing/v1/identifiers/meeting/{date} api 
     raceId = models.IntegerField(primary_key=True)
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name='races')
-    number = models.IntegerField()
+    number = models.IntegerField(null=True, blank=True)
     isAbandoned = models.BooleanField(default=False)
-    stage = models.CharField(max_length=50)
+    stage = models.CharField(max_length=50, blank=True, null=True)
 
    
     # from /horse-racing/v1/field/meeting/{meetingId}
@@ -20,9 +20,11 @@ class Race(models.Model):
     
     start_type = models.CharField(max_length=20, blank=True, null=True)
     startTimeUtc = models.DateTimeField(null=True, blank=True)
+    startTimeUtc_raw = models.CharField(max_length=100, blank=True, null=True)
+    startTimeUtcAus = models.DateTimeField(null=True, blank=True)
     
-    track_condition = models.CharField(max_length=20, blank=True)
-    track_condition_rating = models.PositiveSmallIntegerField(null=True, blank=True)
+    track_condition = models.CharField(max_length=20, blank=True, null=True)
+    track_condition_rating = models.IntegerField(null=True, blank=True)
     track_type = models.CharField(max_length=20, blank=True)
     
     # Entry conditions

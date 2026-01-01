@@ -6,6 +6,9 @@ from django.conf import settings
 from decimal import Decimal
 from dateutil import parser
 from dateutil import parser as date_parser
+from django.utils import timezone as dj_timezone 
+import pytz
+from dateutil import parser
 
 # Model importing:
 from horse_race.models.horse import *
@@ -19,36 +22,61 @@ from horse_race.models.predictor import *
 
 BASE_URL = "https://api.formpro.com.au"
 
+# def time_conversion(time):
+#     australia = pytz.timezone("Australia/Sydney")
+#     current_time_str = time 
+
+#     # Remove the "Z" and convert the string to a datetime object (in UTC)
+#     current_time = datetime.strptime(current_time_str[:-1], "%Y-%m-%dT%H:%M:%S%z")
+
+#     # Convert the datetime object to the Australia/Sydney timezone
+#     current_time_in_sydney = current_time.astimezone(australia)
+
+#     return current_time_in_sydney
+
+def time_conversion(time_str):
+    australia = pytz.timezone("Australia/Sydney")
+    utc = pytz.UTC
+
+    # Fix invalid "+00:00Z"
+    if time_str.endswith("+00:00Z"):
+        time_str = time_str.replace("+00:00Z", "Z")
+
+    dt_utc = parser.isoparse(time_str).astimezone(utc)
+    dt_aus = dt_utc.astimezone(australia)
+
+    return dt_aus
+
 class Command(BaseCommand):
     help = 'Sync field data for meetings'
 
     def handle(self, *args, **options):
-    #     # 1. Fetch ALL meetings for today's race
-    #     target_date = date.today()
+        # 1. Fetch ALL meetings for today's race  
+        target_date = date.today()
+        if options.get('date'):
+            target_date = datetime.strptime(options['date'], '%Y-%m-%d').date()
 
-    #     if options.get('date'):
-    #         try:
-    #             target_date = datetime.strptime(options['date'], '%Y-%m-%d').date()
-    #         except ValueError:
-    #             self.stdout.write(self.style.ERROR(f"Invalid date format: {options['date']}"))
-    #             return
+        start_dt = dj_timezone.make_aware(datetime.combine(target_date, time.min), timezone=timezone.utc)
+        end_dt   = dj_timezone.make_aware(datetime.combine(target_date, time.max), timezone=timezone.utc)
 
-    #     meetings = Meeting.objects.filter(date=target_date)
-    #     total_meetings = meetings.count()
+        print(start_dt, end_dt)
 
-    #     if total_meetings == 0:
-    #         self.stdout.write(self.style.WARNING(f"No meetings found for date: {target_date}"))
-    #         return
+        meetings = Meeting.objects.filter(startTimeUtc__range=(start_dt, end_dt))
+        total_meetings = meetings.count()
 
-    #     self.stdout.write(self.style.SUCCESS(f"Found {total_meetings} meetings to sync for {target_date}"))
+        if total_meetings == 0:
+            self.stdout.write(self.style.WARNING(f"No meetings found for date: {target_date}"))
+            return
 
-    #     for i, meeting in enumerate(meetings, 1):
-    #         if meeting.meetingId:
-    #             self.stdout.write(f"Syncing {i}/{total_meetings} (Meeting ID: {meeting.meetingId})...")
-    #             self.sync_field_for_meeting(meeting.meetingId)
+        self.stdout.write(self.style.SUCCESS(f"Found {total_meetings} meetings to sync for {target_date}"))
 
-        meetingId = Meeting.objects.first().meetingId
-        self.sync_field_for_meeting(meetingId)
+        for i, meeting in enumerate(meetings, 1):
+            if meeting.meetingId:
+                self.stdout.write(f"Syncing {i}/{total_meetings} (Meeting ID: {meeting.meetingId})...")
+                self.sync_field_for_meeting(meeting.meetingId)
+
+        # meetingId = Meeting.objects.first().meetingId
+        # self.sync_field_for_meeting(meetingId)
 
     def sync_field_for_meeting(self, meetingId):
         url = f"https://api.formpro.com.au/horse-racing/v1/field/meeting/{meetingId}"
@@ -143,6 +171,8 @@ class Command(BaseCommand):
                 "start_type": race_info.get("startType"),
                 # "startTimeUtc": race_info.get("startTimeUtc"),
                 "startTimeUtc": start_time_parsed,
+                "startTimeUtc_raw": race_info.get("startTimeUtc"),
+                'startTimeUtcAus':time_conversion(race_info.get("startTimeUtc")),
                 "track_condition": race_info.get("trackConditionOverall"),
                 "track_condition_rating": race_info.get("trackConditionRating"),
                 "track_type": race_info.get("trackType"),

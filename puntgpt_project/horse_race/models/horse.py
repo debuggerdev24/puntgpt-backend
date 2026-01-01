@@ -27,7 +27,7 @@ class Horse(models.Model):
     training_location = models.CharField(max_length=100, blank=True)
 
     # from the /horse-racing/v1/form/race/{raceId}
-    last_10_starts = models.CharField(max_length=10, blank=True)  
+    # last_10_starts = models.CharField(max_length=10, blank=True)  
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

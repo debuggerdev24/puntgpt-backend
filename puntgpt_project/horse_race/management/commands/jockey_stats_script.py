@@ -5,6 +5,7 @@ from django.db import transaction
 from django.conf import settings
 from decimal import Decimal
 from dateutil import parser
+from django.utils import timezone as dj_timezone 
 
 # Model importing:
 from horse_race.models.horse import *
@@ -20,25 +21,28 @@ BASE_URL = "https://api.formpro.com.au"
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        '''
         # no need of refreshing all jockeys perday so we will fetch the data of the jockey that participated in today race.
-        # target_date = date.today()
+        target_date = date.today()
+        if options.get('date'):
+            target_date = datetime.strptime(options['date'], '%Y-%m-%d').date()
 
-        # if options.get('date'):
-        #     target_date = datetime.strptime(options['date'], '%Y-%m-%d').date()
+        start_dt = dj_timezone.make_aware(datetime.combine(target_date, time.min), timezone=timezone.utc)
+        end_dt   = dj_timezone.make_aware(datetime.combine(target_date, time.max), timezone=timezone.utc)
 
-        # jockey_ids = Selection.objects.filter(race__metting__date=target_date).values_list('jockey_id',flat=True).distinct()
-        # total = jockey_ids.count()
+        print(start_dt, end_dt)
 
-        # print(f"Total jockeys to sync: {total}")
+        jockey_ids = Selection.objects.filter(race__meeting__startTimeUtc__range=(start_dt, end_dt)).values_list('jockey_id',flat=True).distinct()
+        total = jockey_ids.count()
 
-        # for jockey_id in jockey_ids:
-        #     self.sync_jockey_detail(jockey_id)
-        '''
+        print(f"Total jockeys to sync: {total}")
+
+        for jockey_id in jockey_ids:
+            self.sync_jockey_detail(jockey_id)
+        
 
         # for checking purpose:
-        jockey = Jockey.objects.first()
-        self.sync_jockey_detail(jockey.jockey_id)
+        # jockey = Jockey.objects.first()
+        # self.sync_jockey_detail(jockey.jockey_id)
 
 
     def sync_jockey_detail(self, jockeyId):

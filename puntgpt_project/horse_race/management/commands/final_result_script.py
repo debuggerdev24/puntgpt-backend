@@ -7,6 +7,7 @@ from django.conf import settings
 from decimal import Decimal
 from dateutil import parser
 from dateutil import parser as date_parser
+from django.utils import timezone as dj_timezone 
 
 # Model importing:
 from horse_race.models.horse import *
@@ -24,32 +25,32 @@ class Command(BaseCommand):
     help = 'Sync final result data for meetings'
 
     def handle(self, *args, **options):
-        # # 1. Fetch ALL meetings for today's race
-        # target_date = date.today()
+        # 1. Fetch ALL meetings for today's race      
+        target_date = date.today()
+        if options.get('date'):
+            target_date = datetime.strptime(options['date'], '%Y-%m-%d').date()
 
-        # if options.get('date'):
-        #     try:
-        #         target_date = datetime.strptime(options['date'], '%Y-%m-%d').date()
-        #     except ValueError:
-        #         self.stdout.write(self.style.ERROR(f"Invalid date format: {options['date']}"))
-        #         return
+        start_dt = dj_timezone.make_aware(datetime.combine(target_date, time.min), timezone=timezone.utc)
+        end_dt   = dj_timezone.make_aware(datetime.combine(target_date, time.max), timezone=timezone.utc)
 
-        # meetings = Meeting.objects.filter(date=target_date)
-        # total_meetings = meetings.count()
+        print(start_dt, end_dt)
 
-        # if total_meetings == 0:
-        #     self.stdout.write(self.style.WARNING(f"No meetings found for date: {target_date}"))
-        #     return
+        meetings = Meeting.objects.filter(startTimeUtc__range=(start_dt, end_dt))
+        total_meetings = meetings.count()
 
-        # self.stdout.write(self.style.SUCCESS(f"Found {total_meetings} meetings to sync for {target_date}"))
+        if total_meetings == 0:
+            self.stdout.write(self.style.WARNING(f"No meetings found for date: {target_date}"))
+            return
 
-        # for i, meeting in enumerate(meetings, 1):
-        #     if meeting.meetingId:
-        #         self.stdout.write(f"Syncing {i}/{total_meetings} (Meeting ID: {meeting.meetingId})...")
-        #         self.sync_field_for_meeting(meeting.meetingId)
+        self.stdout.write(self.style.SUCCESS(f"Found {total_meetings} meetings to sync for {target_date}"))
 
-        meetingId = Meeting.objects.first().meetingId
-        self.sync_meeting_results(meetingId)
+        for i, meeting in enumerate(meetings, 1):
+            if meeting.meetingId:
+                self.stdout.write(f"Syncing {i}/{total_meetings} (Meeting ID: {meeting.meetingId})...")
+                self.sync_meeting_results(meeting.meetingId)
+
+        # meetingId = Meeting.objects.first().meetingId
+        # self.sync_meeting_results(meetingId)
 
     def sync_meeting_results(self,meetingId: int):
         url = f"https://api.formpro.com.au/horse-racing/v1/results/final/meeting/{meetingId}"
@@ -95,22 +96,34 @@ class Command(BaseCommand):
         print(f"[INFO] Syncing {len(data.get('races', []))} races for meeting {meetingId}")
 
         for race_entry in data.get("races", []):
-            race_result = race_entry["raceResult"]
+            race_result = race_entry.get("raceResult")
             selections_data = race_entry.get("selectionResults", [])
 
-            race_id = race_result["raceId"]
+            if not race_result:
+                print(f"[WARN] Missing raceResult for meeting {meetingId}, skipping race entry")
+                continue
 
-            # Update Race
-            race, created = Race.objects.get_or_create(raceId=race_id)
-            race.meeting = meeting
-            race.number = race_result["number"]
-            race.name = race_result.get("name", "")
-            # race.official_time = _parse_time(race_result.get("officialTime"))
-            # race.last_600_time = _parse_time(race_result.get("last600Time"))
-            race.race_starters = race_result.get("raceStarters")
-            # race.isAbandoned = race_result.get("isAbandoned", False)
-            # race.stage = "Results"
-            races_to_update.append(race)
+            race_id = race_result.get("raceId")
+
+        
+            race, created = Race.objects.get_or_create(
+            raceId=race_id,
+            defaults={
+                "meeting": meeting,
+                "number": race_result.get("number"),
+                "name": race_result.get("name", ""),
+                "race_starters": race_result.get("raceStarters"),
+            }
+        )
+
+            # If race already exists, update fields
+            if not created:
+                race.meeting = meeting
+                race.number = race_result.get("number")
+                race.name = race_result.get("name", "")
+                race.race_starters = race_result.get("raceStarters")
+                races_to_update.append(race)
+
 
             winner_sel = second_sel = third_sel = None
 
@@ -121,6 +134,52 @@ class Command(BaseCommand):
             #     for h in HorseRaceHistory.objects.filter(race=race).select_related('horse')
             # }
 
+            # --------------------------------
+            # CASE 2: RACE-ONLY RESULTS (KEY)
+            # --------------------------------
+            placings = [
+                (1, "winnerHorse", "winnerJockey"),
+                (2, "secondHorse", "secondJockey"),
+                (3, "thirdHorse", "thirdJockey"),
+            ]
+
+            for pos, horse_key, jockey_key in placings:
+                horse_data = race_result.get(horse_key)
+                if not horse_data:
+                    continue
+
+                horse, _ = Horse.objects.get_or_create(
+                    horse_id=horse_data["horseId"],
+                    defaults={"name": horse_data["name"]}
+                )
+
+                jockey = None
+                jockey_data = race_result.get(jockey_key)
+                if jockey_data:
+                    jockey, _ = Jockey.objects.get_or_create(
+                        jockey_id=jockey_data["jockeyId"],
+                        defaults={"name": jockey_data.get("name", "Unknown")}
+                    )
+
+                sel_obj, created = Selection.objects.update_or_create(
+                    race=race,
+                    horse=horse,
+                    jockey=jockey,
+                    defaults={
+                        "result_position": pos,
+                    }
+                )    
+                if pos == 1:
+                    winner_sel = sel_obj
+                elif pos == 2:
+                    second_sel = sel_obj
+                elif pos == 3:
+                    third_sel = sel_obj 
+                
+            
+            # --------------------------------
+            # CASE 1: SELECTIONS + HISTORY
+            # --------------------------------
             for sel_data in selections_data:
                 if sel_data.get("isScratched"):
                     continue
@@ -220,12 +279,11 @@ class Command(BaseCommand):
             # Set placings on race
             if winner_sel:
                 race.winner = winner_sel
-                # race.winner_horse = winner_sel.horse
-                # race.winner_jockey = winner_sel.jockey
             if second_sel:
                 race.second = second_sel
             if third_sel:
                 race.third = third_sel
+            race.save(update_fields=["winner", "second", "third"])
 
         # BULK OPERATIONS
         if races_to_update:
