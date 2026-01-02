@@ -10,6 +10,7 @@ from horse_race.models.selection import Selection
 from subscription.models import UserSubscription
 from horse_race.models.horse import HorseStatistic
 from django.db.models import OuterRef, Exists, Subquery, Q, IntegerField, F
+from horse_race.models.jockey_horse_static import JockeyHorseStatistic
 
 def time_conversion(time):
     try: 
@@ -330,11 +331,24 @@ class UpcomingRunnersView(APIView):
             '''
 
 
-            # jockey_horse_wins 
+            # jockey_horse_wins: indicates whether the horse and jockey pair have recorded wins together
             '''
-            Need to find the jockey and horse wins together. it's dropdown values so 
-            i think we need to put the values  0, 1, 3
+            Determine whether the specific Horse and Jockey pair scheduled for this race
+            have previously won together.
+            This checks the JockeyHorseStatistic model for records matching both the
+            Selection's horse and jockey with a win count greater than zero.
             '''
+            if jockey_horse_wins and str(jockey_horse_wins).isdigit():
+                min_wins = int(jockey_horse_wins)
+                results = results.filter(
+                    Exists(
+                        JockeyHorseStatistic.objects.filter(
+                            horse=OuterRef("horse"),
+                            jockey=OuterRef("jockey"),
+                            wins__gte=min_wins
+                        )
+                    )
+                )
 
 
             # jockey strike rate last 12 months
