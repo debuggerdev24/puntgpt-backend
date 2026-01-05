@@ -25,3 +25,5 @@ staticfiles/
 *.env
 /Progress.txt
 /server_details.txt
+/cred.txt
+/api_progress.txt

@@ -52,7 +52,6 @@ def format_results(results):
 
 
 class UpcomingRunnersView(APIView):  
-
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -375,11 +374,17 @@ class UpcomingRunnersView(APIView):
                             )
                         )
                     )
+                
+
+            runner_count = results.count()
     
             response, code = success_response(
-                                "Upcoming runners fetched successfully.",
-                                data=format_results(results),
-                                status_code=status.HTTP_200_OK)
+                    "Upcoming runners fetched successfully.",
+                    data={
+                        "runner_count": runner_count,  
+                        "runners": format_results(results)
+                        },
+                     status_code=status.HTTP_200_OK)
 
             return Response(response, status=code)
         

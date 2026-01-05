@@ -7,3 +7,4 @@ from horse_race.models.race import *
 from horse_race.models.selection import *
 from horse_race.models.predictor import *
 from horse_race.models.jockey_horse_static import *
+from horse_race.models.saved_search_model import *
