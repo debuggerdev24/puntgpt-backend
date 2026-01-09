@@ -141,7 +141,7 @@ class UpcomingRunnersView(APIView):
                     "race__startTimeUtc_raw",
                     "race__meeting__track__name",
                     "silks_image",
-                    "playup_fixed_odds_win",
+                    "playup_fixed_odds_win"
                 )
 
             # logic for jumps within 10mins and Jumps within an hour
