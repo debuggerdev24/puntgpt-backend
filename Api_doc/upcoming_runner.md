@@ -161,6 +161,8 @@ Example: 1-2
 Business Meaning:
 Includes horses that have won from the specified barrier position.
 
+12. Odd range
+
 
 
 Sample Response:
