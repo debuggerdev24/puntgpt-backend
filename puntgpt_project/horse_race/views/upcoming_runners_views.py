@@ -43,9 +43,9 @@ def format_results(results):
             "trainer_name": r["trainer__name"],
             "track": r["race__meeting__track__name"],
             "race_number": r["race__number"],
-            "jump_time_db": r["race__startTimeUtc"],
             "jump_time_au": time_conversion(r["race__startTimeUtc_raw"]),
             "silks_image": r["silks_image"],
+
         }
         for r in results
     ]
@@ -141,6 +141,7 @@ class UpcomingRunnersView(APIView):
                     "race__startTimeUtc_raw",
                     "race__meeting__track__name",
                     "silks_image",
+                    "playup_fixed_odds_win",
                 )
 
             # logic for jumps within 10mins and Jumps within an hour
@@ -322,13 +323,15 @@ class UpcomingRunnersView(APIView):
                     last_result_position=last_result_position_subquery
                 ).filter(last_result_position=1)
 
-
-
             # odds range 
             '''
-            pending for now. As we are not getting the odds from the API
+            Filter selections where the fixed win odds exactly match the provided value.
             '''
-
+            if odds_range:
+                try:
+                    results = results.filter(playup_fixed_odds_win=float(odds_range))
+                except (ValueError, TypeError):
+                    pass
 
             # jockey_horse_wins: indicates whether the horse and jockey pair have recorded wins together
             '''

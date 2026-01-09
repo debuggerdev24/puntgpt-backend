@@ -37,8 +37,16 @@ class Selection(models.Model):
     weight_carried = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # Actual weight carried
     in_running_positions = models.JSONField(blank=True, default=list)  # e.g., [{"distance": 600, "position": 1}]
 
+    # ===============================================================
+    #  PlayUp Api fields
+    # ================================================================
+    playup_selection_id = models.CharField(max_length=100, null=True, blank=True)
+    playup_fixed_odds_win = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    playup_fixed_odds_place = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    playup_price_fluctuations = models.JSONField(null=True, blank=True, default=list)
+
     class Meta:
-        unique_together = ('race', 'number')
+        unique_together = ('race', 'number', 'selectionId')
 
     def __str__(self):
         return f"#{self.number} {self.horse.name} ({self.race})"

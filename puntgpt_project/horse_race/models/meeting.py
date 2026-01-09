@@ -2,6 +2,7 @@ from django.db import models
 from horse_race.models.track import Track
 
 class Meeting(models.Model):
+
     # from the /horse-racing/v1/identifiers/meeting/{date} api 
     meetingId = models.IntegerField(primary_key=True)
     date = models.DateField(db_index=True)                    # Very useful index
@@ -20,6 +21,13 @@ class Meeting(models.Model):
     weather_condition = models.CharField(max_length=50, blank=True)
     temperature = models.PositiveSmallIntegerField(null=True, blank=True)
     tab_status = models.BooleanField(default=False)
+
+
+
+    # ===============================================================
+    #  PlayUp Api fields
+    # ================================================================
+    playup_meeting_id = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return f"{self.date} - {self.track.name}"

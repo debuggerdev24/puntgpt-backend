@@ -41,8 +41,13 @@ class Race(models.Model):
     second = models.ForeignKey('Selection', on_delete=models.SET_NULL, null=True, blank=True, related_name='races_second')
     third = models.ForeignKey('Selection', on_delete=models.SET_NULL, null=True, blank=True, related_name='races_third')
 
+    # ===============================================================
+    #  PlayUp Api fields
+    # ================================================================
+    playup_race_id = models.CharField(max_length=100, null=True, blank=True)
+
     class Meta:
-        unique_together = ('meeting', 'number')  # Safety
+        unique_together = ['meeting', 'number', 'raceId']
 
     def __str__(self):
         return f"R{self.number} {self.meeting.track.name} {self.meeting.date}"
