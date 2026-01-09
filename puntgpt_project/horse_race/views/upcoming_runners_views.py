@@ -45,7 +45,7 @@ def format_results(results):
             "race_number": r["race__number"],
             "jump_time_au": time_conversion(r["race__startTimeUtc_raw"]),
             "silks_image": r["silks_image"],
-
+            "odds": r["playup_fixed_odds_win"],
         }
         for r in results
     ]
@@ -211,12 +211,16 @@ class UpcomingRunnersView(APIView):
             '''
             
             if placed_at_distance:
+                value = placed_at_distance
+                print(f"value: {value}")
+                if value == "0 - 1000m":
+                    value = "'0 - 1000m'"
                 results = results.filter(
                     Exists(
                         HorseStatistic.objects.filter(
                             horse=OuterRef("horse"),
                             category="distance",
-                            value=placed_at_distance,
+                            value=value,
                             runs__gt=0
                         )
                     )
